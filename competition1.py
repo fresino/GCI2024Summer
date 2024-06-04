@@ -77,8 +77,46 @@ rfc.fit(X_train, y_train)
 print('Train Score: {}'.format(round(rfc.score(X_train, y_train), 3)))
 print(' Test Score: {}'.format(round(rfc.score(X_valid, y_valid), 3)))
 
+# ロジスティクス学習モデル
+lr = LogisticRegression(random_state=42)
+lr.fit(X_train, y_train)
+
+print('Logistic Regression \n')
+print('Train Score: {}'.format(round(lr.score(X_train, y_train), 3)))
+print(' Test Score: {}'.format(round(lr.score(X_valid, y_valid), 3)))
+
+# 多層パーセプトロンモデル
+mlpc = MLPClassifier(hidden_layer_sizes=(100, 100, 10), random_state=0)
+mlpc.fit(X_train, y_train)
+
+print('Multilayer Perceptron \n')
+print('Train Score: {}'.format(round(mlpc.score(X_train, y_train), 3)))
+print(' Test Score: {}'.format(round(mlpc.score(X_valid, y_valid), 3)))
+
+# モデルのアンサンプリング
+rfc_pred = rfc.predict_proba(X_test)
+lr_pred = lr.predict_proba(X_test)
+mlpc_pred = mlpc.predict_proba(X_test)
+
+pred_proba = (rfc_pred + lr_pred + mlpc_pred) / 3
+pred = pred_proba.argmax(axis=1)
+
 # 読み込むデータが格納されたディレクトリのパス，必要に応じて変更の必要あり
 path = '/Users/hayase/Library/CloudStorage/OneDrive-筑波大学/松尾研/01.（公開）コンペ1/'
 
 submission = pd.read_csv(path + 'gender_submission.csv')
+#print(submission)
+
+# 上書き
+pred.shape
+
+submission['Perished'] = pred
 print(submission)
+
+#CSV化
+submission.to_csv('/Users/hayase/Library/CloudStorage/OneDrive-筑波大学/松尾研/01.（公開）コンペ1/submission.csv', index=False)
+
+#kaggle用
+submission['Survived'] = -(pred) + 1 #Survivedを追加，omnicampus用と0,1が逆なので対応するように変換
+submission.drop(['Perished'], axis=1, inplace=True) #Perishedは不要なので削除
+submission.to_csv('/Users/hayase/Library/CloudStorage/OneDrive-筑波大学/松尾研/01.（公開）コンペ1/submission_kaggle.csv', index=False)
